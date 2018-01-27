@@ -31,7 +31,6 @@ class MapReduce(Thread):
             mappers[i].join()
         global terms_list
         terms_list = list(terms_postings_dic.keys())
-        # Shuffle and sort : distributed group by of the postings by term ==> the execution framework brings together all the postings that belong in the same posting list (the same term)
         for i in range(10):
             reducers[i].start()
         for i in range(10):
@@ -53,12 +52,6 @@ class Docs_Browser(Thread):
                 doc_list.append((self.__counter, file_path))
                 doc_queue.put((self.__counter, file_path))
                 self.__counter += 1
-            # for dir in dirs:
-            #     dir_path = root + dir + '/'
-            #     for filename in os.listdir(dir_path):
-            #         doc_list.append((self.__counter, dir_path + filename))
-            #         doc_queue.put((self.__counter, dir_path + filename))
-            #         self.__counter += 1
         global still_browsing
         still_browsing = False
 
@@ -128,28 +121,14 @@ class Reducer(Thread):
 
 # An auxiliary data structure is necessary to maintain the mapping from integer document ids to file names => list for example ?
 
-# Divide the docs by 10 (ex docID mod 10)
 
-#Individual documents are processed in parallel by the mappers
+mapreduce = MapReduce('./data/CS276/')
+mapreduce.start()
+mapreduce.join()
 
-
-
-# def reduce(term, )
-# The reducer initializes an empty list and appends all postings associated with the same term to it. Then sorts by docID
-# Each reducer writes its output to a different file, no need to consolidate them
-# So we need an index to know, for a given term, which file contains it (separate terms by first letter ? Make 8 files ? (3-4 letters)
-
-
-
-
-
-# mapreduce = MapReduce('./data/CS276/')
-# mapreduce.start()
-# mapreduce.join()
-#
-# with open("mapreduce_index.txt", "wt") as index_file:
-#     for t in terms_postings_dic.keys():
-#         postings = [t + ',' + str(posting[0]) + ',' + str(posting[1]) for posting in terms_postings_dic[t]]
-#         line = ';'.join(postings) + '\n'
-#         index_file.write(line)
-# index_file.close()
+with open("mapreduce_index.txt", "wt") as index_file:
+    for t in terms_postings_dic.keys():
+        postings = [t + ',' + str(posting[0]) + ',' + str(posting[1]) for posting in terms_postings_dic[t]]
+        line = ';'.join(postings) + '\n'
+        index_file.write(line)
+index_file.close()
